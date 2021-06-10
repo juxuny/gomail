@@ -182,9 +182,27 @@ func (c *smtpSender) Close() error {
 
 // Stubbed out for tests.
 var (
-	netDialTimeout = net.DialTimeout
-	tlsClient      = tls.Client
-	smtpNewClient  = func(conn net.Conn, host string) (smtpClient, error) {
+	netDialTimeout = func(network, address string, timeout time.Duration) (net.Conn, error) {
+		if socks5Client != nil {
+			// proxy server is configured
+			ch := make(chan struct{})
+			var conn net.Conn
+			var err error
+			go func() {
+				conn, err = socks5Client.Dial(network, address)
+				ch <- struct{}{}
+			}()
+			select {
+			case <-time.NewTimer(timeout).C:
+				return nil, fmt.Errorf("network timeout")
+			case <-ch:
+				return conn, err
+			}
+		}
+		return net.DialTimeout(network, address, timeout)
+	}
+	tlsClient     = tls.Client
+	smtpNewClient = func(conn net.Conn, host string) (smtpClient, error) {
 		return smtp.NewClient(conn, host)
 	}
 )
