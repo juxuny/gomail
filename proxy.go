@@ -9,7 +9,7 @@ var (
 )
 
 // SetSocksProxy is a function that update proxy config
-func SetSocks5Proxy(proxyAddress string) error {
+func SetProxy(proxyAddress string) error {
 	var err error
 	proxyClient, err = proxyclient.NewProxyClient(proxyAddress)
 	if err != nil {
