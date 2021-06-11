@@ -183,13 +183,13 @@ func (c *smtpSender) Close() error {
 // Stubbed out for tests.
 var (
 	netDialTimeout = func(network, address string, timeout time.Duration) (net.Conn, error) {
-		if socks5Client != nil {
+		if proxyClient != nil {
 			// proxy server is configured
 			ch := make(chan struct{})
 			var conn net.Conn
 			var err error
 			go func() {
-				conn, err = socks5Client.Dial(network, address)
+				conn, err = proxyClient.Dial(network, address)
 				ch <- struct{}{}
 			}()
 			select {
